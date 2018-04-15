@@ -1,0 +1,18 @@
+version: "3"
+services:
+  proxy:
+    image: dev/proxy
+    ports:
+      - "443:18443"
+      - "80:18080"
+    networks:
+      - cluster
+  backend:
+    image: app-backend
+    ports:
+      - "8080:8080"
+    networks:
+      - cluster
+
+networks:
+  cluster:
