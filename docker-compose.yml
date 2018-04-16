@@ -13,6 +13,37 @@ services:
       - "8080:8080"
     networks:
       - cluster
+  database:
+    image:  crunchydata/crunchy-postgres:centos7-10.3-1.8.2
+    environment:
+      - PG_PRIMARY_HOST=vramdb
+      - PGHOST=/tmp
+      - PG_PRIMARY_SERVICE_NAME=vramdb
+      - PG_PRIMARY_PORT="5432"
+      - PG_MODE=primary
+      - PGDATA_PATH_OVERRIDE=vramdb
+      - PG_PRIMARY_USER=baseline
+      - PG_PRIMARY_PASSWORD=changeit
+      - PG_USER=vram
+      - PG_PASSWORD=changeit
+      - PG_ROOT_PASSWORD=changeit
+      - PG_DATABASE=baseline
+      - BACKUP_PATH=skip
+    configs:
+      - source: pgconf
+        target: /pgconf/postgresql.conf
+      - source: pghba
+        target: /pgconf/pghba.conf
+      - source: setup
+        target: /pgconf/setup.sql
+
+configs:
+  pgconf:
+    file: ./database/postgresql.conf
+  pghba:
+    file: ./database/pghba.conf
+  setup:
+    file: ./database/setup.sql
 
 networks:
   cluster:

@@ -40,6 +40,23 @@ It is designed to create a production-like environment while easing the developm
 * Container not required.
 * Nginx must be able to redirect to this. 
 
+## Docker Preparation
+
+The compose file refers to several baseline containers that must be built ahead of time.
+
+For example:
+
+        # build proxy base from app-proxy folder
+        docker build -t dev/proxy .
+        
+        # build webapp base, currently housed at src/main/docker subfolder of supported webapp
+        cd src/main/docker
+        docker build -t dev/backend .
+        
+        # also assumes webapp container with war file is already built
+        # stored with webapp, next to pom.xml
+        docker built -t app-backend .
+
 ## Docker Compose / Stack / Swarm
 
 Docker compose supports compose file format 2.x and earlier.
