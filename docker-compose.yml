@@ -9,6 +9,9 @@ services:
       - cluster
   backend:
     image: app-backend
+    environment:
+      - TODO=set all of these appropriately to support datasources
+      - TODO2=use .env files if possible
     ports:
       - "8080:8080"
     networks:
