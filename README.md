@@ -16,6 +16,10 @@ It is designed to create a production-like environment while easing the developm
 * Use volume mounts if local system security constraints permit.
 * Use Docker (Kitematic, etc...) to start stop.
 
+Example of cert creation (for now we also included prepared self-signed cert)
+
+        openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 365 -keyout localhost.key -out localhost.crt -subj "/C=US/ST=California/L=San Diego/O=sandbox/CN=localhost"
+
 ## Database
 
 * Use crunchy container as baseline.
