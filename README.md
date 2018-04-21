@@ -61,13 +61,27 @@ For example:
         # stored with webapp, next to pom.xml
         docker built -t app-backend .
 
-## Docker Compose / Stack / Swarm
+## Docker Compose 
 
-Docker compose supports compose file format 2.x and earlier.
+Requires docker version 17.06.0+ and docker-compose version 1.17+
 
-Docker stack (built into docker) supports 3.x and later.
+Initial testing done with docker version 18.03.0-ce and docker-compose 1.21
 
-Docker stack is built in, but was inherity from docker swarm in the docker 1.12 release.
+Starting the container suite:
+
+        docker-compose up
+       
+Updating a single container, using backend as example:
+
+       docker compose stop backend
+       docker-compose up -d --no-deps backend
+
+## Docker Stack
+
+Docker stack/swarm supports a number of useful options such as config files
+and scaling, however it is more difficult to use for development purposes.
+
+The steps below are mainly notes, and are no longer tested with the included compose file.
 
 Getting started with Stack / Swarm:
 

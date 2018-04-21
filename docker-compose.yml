@@ -1,6 +1,11 @@
-version: "3"
+# Create web application cluster with proxy and database.
+---
+
+version: "3.3"
+
 services:
   proxy:
+    container_name: proxy
     image: dev/proxy
     ports:
       - "443:18443"
@@ -8,45 +13,82 @@ services:
     networks:
       - cluster
   backend:
+    container_name: backend
     image: app-backend
     environment:
-      - TODO=set all of these appropriately to support datasources
+      - PG_SERVICE_NAME=database
+      - PG_SERVICE_PORT=5432
+      - DATA_DB_NAME=appdata
+      - DATA_DB_USERNAME=appdata
+      - DATA_DB_PASSWORD=apppassword
+      - DATA_DB_ADMIN_USERNAME=appdata_admin
+      - DATA_DB_ADMIN_PASSWORD=apppassword
+      - DATA_DB_MAX_TOTAL=50
+      - DATA_DB_MAX_IDLE=20
+      - DATA_DB_MAX_WAIT=200
       - TODO2=use .env files if possible
     ports:
       - "8080:8080"
     networks:
       - cluster
   database:
-    image:  crunchydata/crunchy-postgres:centos7-10.3-1.8.2
+    container_name: database
+    image: crunchydata/crunchy-postgres:centos7-10.3-1.8.2
+    ports:
+      - "5432:5432"
+    networks:
+      - cluster
+    volumes:
+      - pgdata:/pgdata
     environment:
-      - PG_PRIMARY_HOST=vramdb
-      - PGHOST=/tmp
-      - PG_PRIMARY_SERVICE_NAME=vramdb
-      - PG_PRIMARY_PORT="5432"
+      - PGDATA_PATH_OVERRIDE=appdb
+      - PG_PRIMARY_HOST=appdb
+      - PG_PRIMARY_SERVICE_NAME=appdb
+      - PG_PRIMARY_PORT=5432
       - PG_MODE=primary
-      - PGDATA_PATH_OVERRIDE=vramdb
       - PG_PRIMARY_USER=baseline
       - PG_PRIMARY_PASSWORD=changeit
-      - PG_USER=vram
+      - PG_USER=appuser
       - PG_PASSWORD=changeit
       - PG_ROOT_PASSWORD=changeit
       - PG_DATABASE=baseline
+      - PGHOST=/tmp
+      - MAX_CONNECTIONS=101
+      - SHARED_BUFFERS=128MB
+      - MAX_WAL_SENDERS=7
+      - WORK_MEM=5MB
+      - TEMP_BUFFERS=9MB
       - BACKUP_PATH=skip
-    configs:
-      - source: pgconf
-        target: /pgconf/postgresql.conf
-      - source: pghba
-        target: /pgconf/pghba.conf
-      - source: setup
-        target: /pgconf/setup.sql
-
-configs:
-  pgconf:
-    file: ./database/postgresql.conf
-  pghba:
-    file: ./database/pghba.conf
-  setup:
-    file: ./database/setup.sql
-
+  pgadmin:
+    container_name: pgadmin
+    image: crunchydata/crunchy-pgadmin4:centos7-10.3-1.8.2
+    ports:
+      - "5050:5050"
+    networks:
+      - cluster
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    environment:
+      - PGADMIN_SETUP_EMAIL=admin@admin.com
+      - PGADMIN_SETUP_PASSWORD=password
+      - SERVER_PORT=5050
+      - CRUNCHY_DEBUG=true
+  bench:
+    container_name: bench
+    image: crunchydata/crunchy-postgres:centos7-10.3-1.8.2
+    ports:
+      - "0:5432"
+    command: ["/bin/bash", "-c", "while true; do echo heartbeat > /dev/null; sleep 30;done"]
+    networks:
+      - cluster
+    volumes:
+      - testdata:/testdata
 networks:
   cluster:
+volumes:
+  pgdata:
+  pgadmin:
+  testdata:
+
+
+
