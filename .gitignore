@@ -1,3 +1,6 @@
+# ignore local customizations from env files
+*.env
+
 ## certificate artifacts
 *.p12
 *.jks
