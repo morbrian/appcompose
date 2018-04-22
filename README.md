@@ -44,6 +44,17 @@ Example of cert creation (for now we also included prepared self-signed cert)
 * Container not required.
 * Nginx must be able to redirect to this. 
 
+## How to ignore environment files
+
+In order to avoid accidental commit of the env files, configure git to locally
+ignore these files in the cloned repository.
+
+        git update-index --assume-unchanged *.env
+        
+If the need to commit these files ever arises, this can easily be undone with:
+
+        git update-index --no-assume-unchanged *.env
+
 ## Docker Preparation
 
 The compose file refers to several baseline containers that must be built ahead of time.
