@@ -14,25 +14,17 @@ services:
       - cluster
   backend:
     container_name: backend
+    env_file:
+      - ./backend.env
     image: app-backend
-    environment:
-      - PG_SERVICE_NAME=database
-      - PG_SERVICE_PORT=5432
-      - DATA_DB_NAME=appdata
-      - DATA_DB_USERNAME=appdata
-      - DATA_DB_PASSWORD=apppassword
-      - DATA_DB_ADMIN_USERNAME=appdata_admin
-      - DATA_DB_ADMIN_PASSWORD=apppassword
-      - DATA_DB_MAX_TOTAL=50
-      - DATA_DB_MAX_IDLE=20
-      - DATA_DB_MAX_WAIT=200
-      - TODO2=use .env files if possible
     ports:
       - "8080:8080"
     networks:
       - cluster
   database:
     container_name: database
+    env_file:
+      - ./database.env
     image: crunchydata/crunchy-postgres:centos7-10.3-1.8.2
     ports:
       - "5432:5432"
@@ -40,27 +32,10 @@ services:
       - cluster
     volumes:
       - pgdata:/pgdata
-    environment:
-      - PGDATA_PATH_OVERRIDE=appdb
-      - PG_PRIMARY_HOST=appdb
-      - PG_PRIMARY_SERVICE_NAME=appdb
-      - PG_PRIMARY_PORT=5432
-      - PG_MODE=primary
-      - PG_PRIMARY_USER=baseline
-      - PG_PRIMARY_PASSWORD=changeit
-      - PG_USER=appuser
-      - PG_PASSWORD=changeit
-      - PG_ROOT_PASSWORD=changeit
-      - PG_DATABASE=baseline
-      - PGHOST=/tmp
-      - MAX_CONNECTIONS=101
-      - SHARED_BUFFERS=128MB
-      - MAX_WAL_SENDERS=7
-      - WORK_MEM=5MB
-      - TEMP_BUFFERS=9MB
-      - BACKUP_PATH=skip
   pgadmin:
     container_name: pgadmin
+    env_file:
+      - ./pgadmin.env
     image: crunchydata/crunchy-pgadmin4:centos7-10.3-1.8.2
     ports:
       - "5050:5050"
@@ -68,11 +43,6 @@ services:
       - cluster
     volumes:
       - pgadmin:/var/lib/pgadmin
-    environment:
-      - PGADMIN_SETUP_EMAIL=admin@admin.com
-      - PGADMIN_SETUP_PASSWORD=password
-      - SERVER_PORT=5050
-      - CRUNCHY_DEBUG=true
   bench:
     container_name: bench
     image: crunchydata/crunchy-postgres:centos7-10.3-1.8.2
