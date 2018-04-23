@@ -87,6 +87,40 @@ Updating a single container, using backend as example:
        docker compose stop backend
        docker-compose up -d --no-deps backend
 
+## Docker container management
+
+The docker containers are initialized with long-lasting volumes the first time compose starts.
+
+Most of the time it will be desirable to accept this initial configuration and avoid 
+starting over with emtpy volumes, however on occasions when a clean slate is needed
+the following commands will help.
+
+The example commands below remove all related containers and volumes,
+however it is also possible to just delete a targeted subset of the containers.
+
+        docker rm database pgadmin backend proxy bench
+        docker volume rm docker-workflow_pgadmin docker-workflow_pgdata docker-workflow_testdata
+        
+## pgadmin4
+
+Connect to pgadmin4 at: http://localhost:5050        
+
+Use login information as specified in pgadmin.env at initialization time.
+
+Create a new connection.
+
+Right click *Servers* choose *Create Server*
+
+General Tab:
+
+  * Name: compose-app
+
+Connection Tab:
+
+  * Host: database
+  * Username: configured in database.env (postgres is the root user)
+  * Password: configured in database.env 
+  
 ## Docker Stack
 
 Docker stack/swarm supports a number of useful options such as config files
