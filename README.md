@@ -58,7 +58,7 @@ After the initial build, the most effective way to update is:
         docker rm -f jdbcwar && docker build --force-rm -t dev/jdbcwar jdbcwar && docker-compose up -d --force-recreate jdbcwar
 
  
-## Environment files
+## environment 
 
 Update the environment variables under the `./env` folder. Recommend changing passwords, otherwise defaults are ok.
 
@@ -72,7 +72,7 @@ If the need to commit these files ever arises, this can easily be undone with:
         git update-index --no-assume-unchanged env/*.env
 
 
-## Docker Compose 
+## docker-compose 
 
 Requires docker version 17.06.0+ and docker-compose version 1.17+
 
@@ -101,9 +101,32 @@ After compose starts services, optionally initalize a testdb with data.
 
 Later, only `dbclone.sh` is required and will drop `testdb`, creating a fresh unmodified copy from `testbaseline`.
 
+## verify installation
 
+Running docker-compose will show logs output the screen.
 
-## Docker container management
+In another terminal, verify the expected containers are running:
+
+        docker ps --format={{.Names}}
+
+        # expected output
+        database
+        simplewar
+        jdbcwar
+        proxy
+
+Verify containers are accessible as expected:
+
+        # verify webapps are accessible through proxy
+        # expect response code 200 and content of index.html from each war.
+        curl -v -k https://localhost:443/jdbcwar
+        curl -v -k https://localhost:443/
+
+        # verify database is directly accessible
+        # expect list of data in table
+        docker exec -it database bash -c "psql -Upostgres -dtestdb -c 'select * from sample;'"
+
+## container management
 
 The docker containers are initialized with long-lasting volumes the first time compose starts.
 
