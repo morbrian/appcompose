@@ -40,9 +40,9 @@ Clone and build the simple war to a clean directory:
         cd simplewar
         mvn clean package docker:build
 
-After the initial build, the most effective way to update is:
+After the initial build, the most effective way to update is from the simple war repository:
 
-        docker rm -f simplewar && docker build --force-rm -t dev/simplewar simplewar && docker-compose up -d --force-recreate simplewar
+        mvn clean package docker:build && docker-compose -f ../appcompose/docker-compose.yml up -d --force-recreate simplewar
 
         
 ## jdbcwar
@@ -53,9 +53,9 @@ Clone and build the jdbc war to a clean directory:
         cd jdbcwar
         mvn clean package docker:build
 
-After the initial build, the most effective way to update is:
+After the initial build, the most effective way to update is jdbcwar repository:
 
-        docker rm -f jdbcwar && docker build --force-rm -t dev/jdbcwar jdbcwar && docker-compose up -d --force-recreate jdbcwar
+        mvn clean package docker:build && docker-compose -f ../appcompose/docker-compose.yml up -d --force-recreate jdbcwar
 
  
 ## environment 
