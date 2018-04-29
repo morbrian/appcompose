@@ -1,9 +1,40 @@
-# Create web application cluster with proxy and database.
+# Create web application database with proxy and database.
 ---
 
 version: "3.3"
 
 services:
+  database:
+    container_name: database
+    env_file:
+      - ./env/database.env
+    image: crunchydata/crunchy-postgres:centos7-10.3-1.8.2
+    ports:
+      - "5432:5432"
+    networks:
+      - cluster
+    volumes:
+      - pgdata:/pgdata
+  jdbcwar:
+    container_name: jdbcwar
+    env_file:
+      - ./env/jdbcwar.env
+    image: dev/jdbcwar
+    ports:
+      - "8081:8080"
+      - "8001:8000"
+    networks:
+      - cluster
+  simplewar:
+    container_name: simplewar
+    env_file:
+      - ./env/simplewar.env
+    image: dev/simplewar
+    ports:
+      - "8080:8080"
+      - "8000:8000"
+    networks:
+      - cluster
   proxy:
     container_name: proxy
     image: dev/proxy
@@ -12,53 +43,10 @@ services:
       - "80:18080"
     networks:
       - cluster
-  backend:
-    container_name: backend
-    env_file:
-      - ./backend.env
-    image: app-backend
-    ports:
-      - "8080:8080"
-    networks:
-      - cluster
-  database:
-    container_name: database
-    env_file:
-      - ./database.env
-    image: crunchydata/crunchy-postgres:centos7-10.3-1.8.2
-    ports:
-      - "5432:5432"
-    networks:
-      - cluster
-    volumes:
-      - pgdata:/pgdata
-  pgadmin:
-    container_name: pgadmin
-    env_file:
-      - ./pgadmin.env
-    image: crunchydata/crunchy-pgadmin4:centos7-10.3-1.8.2
-    ports:
-      - "5050:5050"
-    networks:
-      - cluster
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-  bench:
-    container_name: bench
-    image: crunchydata/crunchy-postgres:centos7-10.3-1.8.2
-    ports:
-      - "0:5432"
-    command: ["/bin/bash", "-c", "while true; do echo heartbeat > /dev/null; sleep 30;done"]
-    networks:
-      - cluster
-    volumes:
-      - testdata:/testdata
+
 networks:
   cluster:
 volumes:
   pgdata:
-  pgadmin:
-  testdata:
-
 
 

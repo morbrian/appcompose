@@ -1,4 +1,3 @@
-#FROM centos/nginx-112-centos7
 FROM morbrian/nginx-base
 
 COPY certs/* /etc/nginx/certs/

@@ -1,0 +1,35 @@
+# Create web application cluster with proxy and database.
+---
+
+version: "3.3"
+
+services:
+  pgadmin:
+    container_name: pgadmin
+    env_file:
+      - ./env/pgadmin.env
+    image: crunchydata/crunchy-pgadmin4:centos7-10.3-1.8.2
+    ports:
+      - "5050:5050"
+    networks:
+      - cluster
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+  bench:
+    container_name: bench
+    image: crunchydata/crunchy-postgres:centos7-10.3-1.8.2
+    ports:
+      - "0:5432"
+    command: ["/bin/bash", "-c", "while true; do echo heartbeat > /dev/null; sleep 30;done"]
+    networks:
+      - cluster
+    volumes:
+      - testdata:/testdata
+networks:
+  cluster:
+volumes:
+  pgadmin:
+  testdata:
+
+
+
