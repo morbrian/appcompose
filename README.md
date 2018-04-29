@@ -6,11 +6,11 @@ with separate frontend, backend and database containers behind a proxy.
 It is designed to mimic a production-like environment while easing the development process for a development team.
 
 * proxy - Nginx
-* database - PostgreSQL
 * simplewar - Simple content deployed as war to Tomcat (path /)
 * jdbcwar - Application with database acesss  deployed as war to Tomcat (path /jdbcwar)
+* database - PostgreSQL
 
-## Proxy
+## proxy
 
 Example of cert creation (for now we also included prepared self-signed cert)
 
@@ -20,31 +20,16 @@ Clone and build the base container for the proxy:
 
         git clone https://github.com/morbrian/vagrant-nginx.git 
         cd vagrant-nginx
-        docker build -t dev/proxy .
+        docker build -t morbrian/nginxbase .
 
-Build the final proxy with local customizations from teh:
+Build the final proxy with local customizations from this appcompose repository:
 
-        docker build -t dev/proxy
+        docker build -t dev/proxy proxy
 
 After the initial build, the most effective way to update with changes from appcompose is:
 
         # If the base container is changed, then that must be built and updated first with the build from vagrant-nginx.
         docker rm -f proxy && docker build --force-rm -t dev/proxy proxy && docker-compose up -d --force-recreate proxy 
-
-
-## Database
-
-Uses crunchydata container as baseline.
-
-After compose starts services, optionally initalize a testdb with data.
-
-        # create a baseline database (testbaseline)
-        bash database/dbinit.sh
-  
-        # clone the testbaseline to a new databasde called 'testdb'
-        bash database/dbclone.sh
-
-Later, only `dbclone.sh` is required and will drop `testdb`, creating a fresh unmodified copy from `testbaseline`.
 
 
 ## simplewar
@@ -73,7 +58,9 @@ After the initial build, the most effective way to update is:
         docker rm -f jdbcwar && docker build --force-rm -t dev/jdbcwar jdbcwar && docker-compose up -d --force-recreate jdbcwar
 
  
-## How to ignore environment files
+## Environment files
+
+Update the environment variables under the `./env` folder. Recommend changing passwords, otherwise defaults are ok.
 
 In order to avoid accidental commit of the env files, configure git to locally
 ignore these files in the cloned repository.
@@ -98,6 +85,22 @@ Starting the container suite:
 Updating a single container, using proxy as example:
 
        docker rm -f proxy && docker build --force-rm -t dev/proxy proxy && docker-compose up -d --force-recreate proxy
+
+
+## database
+
+Uses crunchydata container as baseline.
+
+After compose starts services, optionally initalize a testdb with data.
+
+        # create a baseline database (testbaseline)
+        bash database/dbinit.sh
+  
+        # clone the testbaseline to a new databasde called 'testdb'
+        bash database/dbclone.sh
+
+Later, only `dbclone.sh` is required and will drop `testdb`, creating a fresh unmodified copy from `testbaseline`.
+
 
 
 ## Docker container management

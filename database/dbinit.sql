@@ -13,6 +13,11 @@ COMMENT ON ROLE "testdb_user" IS 'Account used for all web server to database tr
 -- prepare simple database
 --
 CREATE DATABASE testbaseline WITH OWNER = "testdb_admin" ENCODING = 'UTF8' TABLESPACE = pg_default LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' CONNECTION LIMIT = -1 TEMPLATE template0;
+
+--
+-- prepare simple data in testdb
+--
+
 \c testbaseline
 CREATE EXTENSION pgcrypto;
 CREATE EXTENSION pg_stat_statements;
@@ -24,11 +29,14 @@ CREATE TABLE sample (
   name character varying,
   cost double precision,
   active boolean
-)
+);
+
+GRANT ALL ON ALL TABLES IN SCHEMA public TO "postgres";
 
 INSERT INTO sample (id, name, cost, active) VALUES
 ( 1, 'apple', 123.00, true ),
 ( 2, 'orange', 246.00, true ),
 ( 3, 'banana', 369.00, true ),
 ( 4, 'kiwi', 4812.00, false ),
-( 5, 'avocado', 51015.00, true )
+( 5, 'avocado', 51015.00, true );
+
