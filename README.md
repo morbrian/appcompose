@@ -1,76 +1,89 @@
-# Development Workflow with Docker
+# appcompose
 
-This project sets up a suite of services representing a complete 3 tier web application running behind a TLS enabled proxy.
+This project provides a simple docker-compose example of running a basic 3 tier web application 
+with separate frontend, backend and database containers behind a proxy.
 
-It is designed to create a production-like environment while easing the development process for a development team.
+It is designed to mimic a production-like environment while easing the development process for a development team.
 
-* Proxy - Nginx
-* Database - PostgreSQL
-* Backend Webserver - Tomcat
-* Frontend Webserver - NodeJS (for develop
+* proxy - Nginx
+* database - PostgreSQL
+* simplewar - Simple content deployed as war to Tomcat (path /)
+* jdbcwar - Application with database acesss  deployed as war to Tomcat (path /jdbcwar)
 
 ## Proxy
-
-* Must be TLS enabled.
-* Developers can build once locally, generating cert in the process.
-* Use volume mounts if local system security constraints permit.
-* Use Docker (Kitematic, etc...) to start stop.
 
 Example of cert creation (for now we also included prepared self-signed cert)
 
         openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 365 -keyout localhost.key -out localhost.crt -subj "/C=US/ST=California/L=San Diego/O=sandbox/CN=localhost"
 
+Clone and build the base container for the proxy:
+
+        git clone https://github.com/morbrian/vagrant-nginx.git 
+        cd vagrant-nginx
+        docker build -t dev/proxy .
+
+Build the final proxy with local customizations from teh:
+
+        docker build -t dev/proxy
+
+After the initial build, the most effective way to update with changes from appcompose is:
+
+        # If the base container is changed, then that must be built and updated first with the build from vagrant-nginx.
+        docker rm -f proxy && docker build --force-rm -t dev/proxy proxy && docker-compose up -d --force-recreate proxy 
+
+
 ## Database
 
-* Use crunchy container as baseline.
-* Provide setup.sql to provide baseline database with schema.
-* Assume this gets run once, and can handle multiple databases.
-* Use volume mounts if local system security constraints permit.
-* Use Docker (Kitematic, etc...) to start stop.
+Uses crunchydata container as baseline.
 
-## Backend Webserver
+After compose starts services, optionally initalize a testdb with data.
 
-* Pull from baseline container (uses Red Hat configured Tomcat)
-* TODO: identify best way to pull war file into container.
-    * docker build and COPY war each time?
-    * can maven plugin help here?
-* Local system security constraints general prevent direct access to the recently built target/war file.
-* Typical start/stop procedure must include fresh war, perhaps implies a complete rebuild of container.
-* Use Docker (Kitematic, etc...) to start stop.
+        # create a baseline database (testbaseline)
+        bash database/dbinit.sh
+  
+        # clone the testbaseline to a new databasde called 'testdb'
+        bash database/dbclone.sh
 
-## Frontend Webserver
+Later, only `dbclone.sh` is required and will drop `testdb`, creating a fresh unmodified copy from `testbaseline`.
 
-* Assume development environment, nodejs server with auto-update.
-* Container not required.
-* Nginx must be able to redirect to this. 
 
+## simplewar
+
+Clone and build the simple war to a clean directory:
+
+        git clone https://github.com/morbrian/simplewar.git 
+        cd simplewar
+        mvn clean package docker:build
+
+After the initial build, the most effective way to update is:
+
+        docker rm -f simplewar && docker build --force-rm -t dev/simplewar simplewar && docker-compose up -d --force-recreate simplewar
+
+        
+## jdbcwar
+
+Clone and build the jdbc war to a clean directory:
+
+        git clone https://github.com/morbrian/jdbcwar.git 
+        cd jdbcwar
+        mvn clean package docker:build
+
+After the initial build, the most effective way to update is:
+
+        docker rm -f jdbcwar && docker build --force-rm -t dev/jdbcwar jdbcwar && docker-compose up -d --force-recreate jdbcwar
+
+ 
 ## How to ignore environment files
 
 In order to avoid accidental commit of the env files, configure git to locally
 ignore these files in the cloned repository.
 
-        git update-index --assume-unchanged *.env
+        git update-index --assume-unchanged env/*.env
         
 If the need to commit these files ever arises, this can easily be undone with:
 
-        git update-index --no-assume-unchanged *.env
+        git update-index --no-assume-unchanged env/*.env
 
-## Docker Preparation
-
-The compose file refers to several baseline containers that must be built ahead of time.
-
-For example:
-
-        # build proxy base from app-proxy folder
-        docker build -t dev/proxy .
-        
-        # build webapp base, currently housed at src/main/docker subfolder of supported webapp
-        cd src/main/docker
-        docker build -t dev/backend .
-        
-        # also assumes webapp container with war file is already built
-        # stored with webapp, next to pom.xml
-        docker built -t app-backend .
 
 ## Docker Compose 
 
@@ -82,10 +95,10 @@ Starting the container suite:
 
         docker-compose up
        
-Updating a single container, using backend as example:
+Updating a single container, using proxy as example:
 
-       docker compose stop backend
-       docker-compose up -d --no-deps backend
+       docker rm -f proxy && docker build --force-rm -t dev/proxy proxy && docker-compose up -d --force-recreate proxy
+
 
 ## Docker container management
 
@@ -99,7 +112,7 @@ The example commands below remove all related containers and volumes,
 however it is also possible to just delete a targeted subset of the containers.
 
         docker rm database pgadmin backend proxy bench
-        docker volume rm docker-workflow_pgadmin docker-workflow_pgdata docker-workflow_testdata
+        docker volume rm appcompose_pgadmin appcompose_pgdata appcompose_testdata
         
 ## pgadmin4
 
