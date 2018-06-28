@@ -179,3 +179,39 @@ Getting started with Stack / Swarm:
         
         # list the stack
         docker stack ps SOME_NAME
+        
+## postgresql database role management
+
+When creating new database, prevent public access by default.
+
+We assume a database called `baseline` exists.
+
+```
+REVOKE ALL ON DATABASE baseline FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+```
+
+Create reader role.
+
+```
+CREATE ROLE "reader";
+ALTER ROLE "reader" WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT 10;
+COMMENT ON ROLE "reader" IS 'basic reader';
+```
+
+Give reader access to baseline.
+
+```
+GRANT CONNECT ON DATABASE baseline TO "reader";
+GRANT USAGE ON SCHEMA PUBLIC TO "reader";
+GRANT SELECT ON ALL TABLES IN SCHEMA PUBLIC TO "reader";
+```
+
+Create new role with same privs as "reader"
+
+```
+CREATE USER "bmoriarty" IN ROLE "reader";
+ALTER ROLE "bmoriarty" WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT 10;
+\password bmoriarty
+```
+
